@@ -1,0 +1,57 @@
+{
+  "run_id": "xiph_standard_v1",
+  "machine": {"hostname": "RTX 4090 x2"},
+  "timestamp": "2026-04-06T22:01:15",
+  "config": {
+    "clips": ["big_buck_bunny_720p", "elephants_dream_720p", "sintel_720p", "tears_of_steel_720p"],
+    "models": ["lanczos", "ghoststream_span_48k"],
+    "pipeline": "Y-channel, 360p→720p, AV1 CRF35, SVT-AV1 b486d83",
+    "note": "Blender Open Movie standard test sequences. Freely redistributable."
+  },
+  "test_clips": [
+    {
+      "name": "big_buck_bunny_720p.mp4",
+      "results_by_crf": {
+        "pipeline": {
+          "methods": {
+            "lanczos": {"vmaf_mean": 89.23, "vmaf_neg_mean": 86.90, "psnr_y": 41.32, "cambi_mean": 0.40},
+            "ghoststream_span_48k": {"vmaf_mean": 90.99, "vmaf_neg_mean": 88.19, "psnr_y": 41.83, "cambi_mean": 0.33}
+          }
+        }
+      }
+    },
+    {
+      "name": "elephants_dream_720p.mp4",
+      "results_by_crf": {
+        "pipeline": {
+          "methods": {
+            "lanczos": {"vmaf_mean": 72.31, "vmaf_neg_mean": 69.83, "psnr_y": 37.20, "cambi_mean": 0.90},
+            "ghoststream_span_48k": {"vmaf_mean": 81.33, "vmaf_neg_mean": 78.07, "psnr_y": 37.80, "cambi_mean": 0.65}
+          }
+        }
+      }
+    },
+    {
+      "name": "sintel_720p.mp4",
+      "results_by_crf": {
+        "pipeline": {
+          "methods": {
+            "lanczos": {"vmaf_mean": 90.43, "vmaf_neg_mean": 87.78, "psnr_y": 34.33, "cambi_mean": 0.80},
+            "ghoststream_span_48k": {"vmaf_mean": 93.14, "vmaf_neg_mean": 90.13, "psnr_y": 34.71, "cambi_mean": 0.53}
+          }
+        }
+      }
+    },
+    {
+      "name": "tears_of_steel_720p.mp4",
+      "results_by_crf": {
+        "pipeline": {
+          "methods": {
+            "lanczos": {"vmaf_mean": 87.05, "vmaf_neg_mean": 84.57, "psnr_y": 42.10, "cambi_mean": 1.49},
+            "ghoststream_span_48k": {"vmaf_mean": 92.40, "vmaf_neg_mean": 89.92, "psnr_y": 42.80, "cambi_mean": 1.15}
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "big_buck_bunny_720p": {
+    "lanczos": {"vmaf": 89.23, "vmaf_neg": 86.90, "psnr_y": 41.32, "cambi": 0.40},
+    "ghoststream": {"vmaf": 90.99, "vmaf_neg": 88.19, "psnr_y": 41.83, "cambi": 0.33}
+  },
+  "elephants_dream_720p": {
+    "lanczos": {"vmaf": 72.31, "vmaf_neg": 69.83, "psnr_y": 37.20, "cambi": 0.90},
+    "ghoststream": {"vmaf": 81.33, "vmaf_neg": 78.07, "psnr_y": 37.80, "cambi": 0.65}
+  },
+  "sintel_720p": {
+    "lanczos": {"vmaf": 90.43, "vmaf_neg": 87.78, "psnr_y": 34.33, "cambi": 0.80},
+    "ghoststream": {"vmaf": 93.14, "vmaf_neg": 90.13, "psnr_y": 34.71, "cambi": 0.53}
+  },
+  "tears_of_steel_720p": {
+    "lanczos": {"vmaf": 87.05, "vmaf_neg": 84.57, "psnr_y": 42.10, "cambi": 1.49},
+    "ghoststream": {"vmaf": 92.40, "vmaf_neg": 89.92, "psnr_y": 42.80, "cambi": 1.15}
+  },
+  "_metadata": {
+    "note": "Expected results from RTX 4090 x2 pod with SVT-AV1 b486d83. Cross-machine variance of ±0.5 VMAF is normal due to SVT-AV1 non-determinism across CPU instruction sets.",
+    "encoder": "SVT-AV1 b486d83 (release)",
+    "crf": 35,
+    "preset": 6,
+    "pipeline": "720p → Lanczos ↓2x → 360p → SVT-AV1 CRF 35 → decode → model ↑2x → 720p → VMAF"
+  }
+}
