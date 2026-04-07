@@ -1,0 +1,14 @@
+{
+  "description": "BD-Rate analysis across 5 CRF points on Blender Open Movie standard sequences",
+  "model": "adversarial_distill_v2_600k (48K params, SPAN)",
+  "clips": ["big_buck_bunny_720p", "elephants_dream_720p", "sintel_720p", "tears_of_steel_720p"],
+  "encoder": "SVT-AV1 b486d83, preset 6",
+  "note": "Model beats Lanczos at ALL CRF points. Delta shrinks at extremes (expected).",
+  "crf_points": {
+    "23": {"lanczos_avg": 90.37, "model_avg": 90.99, "delta": 0.62, "quality": "near-lossless"},
+    "28": {"lanczos_avg": 88.53, "model_avg": 89.14, "delta": 0.60, "quality": "high"},
+    "35": {"lanczos_avg": 84.76, "model_avg": 85.35, "delta": 0.59, "quality": "standard"},
+    "42": {"lanczos_avg": 79.61, "model_avg": 80.13, "delta": 0.52, "quality": "low"},
+    "51": {"lanczos_avg": 78.71, "model_avg": 79.03, "delta": 0.32, "quality": "very-low"}
+  }
+}

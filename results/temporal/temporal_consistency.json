@@ -1,0 +1,82 @@
+{
+  "big_buck_bunny_720p": {
+    "ground_truth": {
+      "avg_mean_diff": 0.01040350180119276,
+      "avg_max_diff": 0.6160989999771118,
+      "avg_pct_changed": 13.423787343866517
+    },
+    "lanczos": {
+      "avg_mean_diff": 0.010363315232098103,
+      "avg_max_diff": 0.6056265830993652,
+      "avg_pct_changed": 12.765144365212526
+    },
+    "ghost_stream": {
+      "avg_mean_diff": 0.010336073115468025,
+      "avg_max_diff": 0.6027711033821106,
+      "avg_pct_changed": 12.706512747017152
+    },
+    "gs_vs_lanczos_ratio": 0.997,
+    "verdict": "GOOD",
+    "frames": 150
+  },
+  "elephants_dream_720p": {
+    "ground_truth": {
+      "avg_mean_diff": 0.04325305297970772,
+      "avg_max_diff": 0.9804620146751404,
+      "avg_pct_changed": 57.51321818488999
+    },
+    "lanczos": {
+      "avg_mean_diff": 0.03335680067539215,
+      "avg_max_diff": 0.9837912917137146,
+      "avg_pct_changed": 53.469713454278526
+    },
+    "ghost_stream": {
+      "avg_mean_diff": 0.03397386521100998,
+      "avg_max_diff": 0.9668329358100891,
+      "avg_pct_changed": 53.17198205047539
+    },
+    "gs_vs_lanczos_ratio": 1.018,
+    "verdict": "GOOD",
+    "frames": 150
+  },
+  "sintel_720p": {
+    "ground_truth": {
+      "avg_mean_diff": 0.06253839284181595,
+      "avg_max_diff": 0.8413059115409851,
+      "avg_pct_changed": 64.06823193395788
+    },
+    "lanczos": {
+      "avg_mean_diff": 0.061573538929224014,
+      "avg_max_diff": 0.8328097462654114,
+      "avg_pct_changed": 63.51252490562081
+    },
+    "ghost_stream": {
+      "avg_mean_diff": 0.061530373990535736,
+      "avg_max_diff": 0.8225680589675903,
+      "avg_pct_changed": 63.23053720404548
+    },
+    "gs_vs_lanczos_ratio": 0.999,
+    "verdict": "GOOD",
+    "frames": 150
+  },
+  "tears_of_steel_720p": {
+    "ground_truth": {
+      "avg_mean_diff": 0.0077309138141572475,
+      "avg_max_diff": 0.44982028007507324,
+      "avg_pct_changed": 13.845852413077928
+    },
+    "lanczos": {
+      "avg_mean_diff": 0.007527700159698725,
+      "avg_max_diff": 0.37600094079971313,
+      "avg_pct_changed": 12.487632393036913
+    },
+    "ghost_stream": {
+      "avg_mean_diff": 0.007484561763703823,
+      "avg_max_diff": 0.4050595760345459,
+      "avg_pct_changed": 12.344211700689785
+    },
+    "gs_vs_lanczos_ratio": 0.994,
+    "verdict": "GOOD",
+    "frames": 150
+  }
+}

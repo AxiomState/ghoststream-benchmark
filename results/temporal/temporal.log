@@ -1,0 +1,41 @@
+Model loaded: 47,980 params
+
+--- big_buck_bunny_720p ---
+  Frames: 150
+  GT:      0.010404
+  Lanczos: 0.010363
+  GS:      0.010336
+  Ratio:   0.997x  [GOOD]
+
+--- elephants_dream_720p ---
+  Frames: 150
+  GT:      0.043253
+  Lanczos: 0.033357
+  GS:      0.033974
+  Ratio:   1.018x  [GOOD]
+
+--- sintel_720p ---
+  Frames: 150
+  GT:      0.062538
+  Lanczos: 0.061574
+  GS:      0.061530
+  Ratio:   0.999x  [GOOD]
+
+--- tears_of_steel_720p ---
+  Frames: 150
+  GT:      0.007731
+  Lanczos: 0.007528
+  GS:      0.007485
+  Ratio:   0.994x  [GOOD]
+
+=====================================================================================
+TEMPORAL CONSISTENCY SUMMARY
+=====================================================================================
+Clip                              GT diff    Lanczos         GS    GS/Lz  Verdict
+-------------------------------------------------------------------------------------
+big_buck_bunny_720p              0.010404   0.010363   0.010336    0.997x     GOOD
+elephants_dream_720p             0.043253   0.033357   0.033974    1.018x     GOOD
+sintel_720p                      0.062538   0.061574   0.061530    0.999x     GOOD
+tears_of_steel_720p              0.007731   0.007528   0.007485    0.994x     GOOD
+
+Saved: /workspace/benchmark_results/temporal_consistency.json

@@ -1,0 +1,314 @@
+Self-test: BT.601 round-trip... PASS (149 dB)
+
+Benchmark v2 — Normalized Pipeline
+Clips: ['/workspace/xiph_clips/big_buck_bunny_720p.mp4', '/workspace/xiph_clips/elephants_dream_720p.mp4', '/workspace/xiph_clips/sintel_720p.mp4', '/workspace/xiph_clips/tears_of_steel_720p.mp4']
+Models: ['lanczos', 'adversarial_distill_v2_600k']
+Compare at: 720x1280, Device: cuda
+Verbose: True, Debug: False
+
+[MODEL] Loading adversarial_distill_v2_600k from /workspace/checkpoints/adversarial_distill_v2_600k.pth...
+[MODEL] Loading /workspace/checkpoints/adversarial_distill_v2_600k.pth
+[MODEL]   Top-level keys: ['h.weight', 'h.bias', 'b.0.c1.weight', 'b.0.c1.bias', 'b.0.c2.weight']
+[MODEL]   Format detected: standalone (22 keys)
+[MODEL]   Architecture: SPANPlus 24ch [4] blocks, 47,980 params
+  Format: standalone (47,980 params)
+
+============================================================
+CLIP: /workspace/xiph_clips/big_buck_bunny_720p.mp4
+============================================================
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/xiph_clips/big_buck_bunny_720p.mp4
+[PROBE] result: {'width': 1280, 'height': 720, 'fps': 24.0, 'frames': 240, 'duration': 10.0}
+  [PROBE] Source: 1280x720, 24.0fps, 240 frames, 10.0s
+  [NORMALIZE] Stage 2: GT 720p from source...
+[NORMALIZE] big_buck_bunny_720p/gt: /workspace/xiph_clips/big_buck_bunny_720p.mp4 -> 1280x720
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/big_buck_bunny_720p.mp4 -vf scale=1280:720:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=663552000
+[NORMALIZE]   ffmpeg resize: -> 1280x720 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 720, 1280), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 720, 1280), no NaN/Inf
+  [NORMALIZE] 240 frames in 2.8s
+  [ENCODE] Stage 3: AV1 CRF 51 encode to 360p...
+[ENCODE] source -> 360p AV1 CRF 51 via SvtAv1EncApp
+[ENCODE] step1 (y4m): ffmpeg -y -hide_banner -loglevel error -i /workspace/xiph_clips/big_buck_bunny_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt yuv420p -f yuv4mpegpipe /tmp/tmp2v8s07oy.y4m
+[ENCODE] step2 (svt): /workspace/tools/bin/SvtAv1EncApp -i /tmp/tmp2v8s07oy.y4m --crf 51 --preset 6 --keyint 240 -b /tmp/tmp9vo0dlr3.ivf
+[ENCODE] step3 (mux): ffmpeg -y -hide_banner -loglevel error -i /tmp/tmp9vo0dlr3.ivf -c copy /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv
+[ENCODE] output: /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv, 139KB
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv
+[PROBE] result: {'width': 640, 'height': 360, 'fps': 24.0, 'frames': 240, 'duration': 10.0}
+  [ENCODE] output: /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv, 139KB, 240 frames (2s)
+[NORMALIZE] big_buck_bunny_720p/av1: /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+[NORMALIZE] big_buck_bunny_720p/src360: /workspace/xiph_clips/big_buck_bunny_720p.mp4 -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/big_buck_bunny_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+  [ENCODE] PSNR check: 39.0 dB  (threshold: 30)
+
+  [NORMALIZE] Lanczos: upscale /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv -> 720p via ffmpeg lanczos
+[NORMALIZE] big_buck_bunny_720p/lanczos: /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv -> 1280x720
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv -vf scale=1280:720:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=663552000
+[NORMALIZE]   ffmpeg resize: -> 1280x720 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 720, 1280), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 720, 1280), no NaN/Inf
+    PSNR-Y: 38.11 dB (2.9s)
+    [VMAF] Computing...
+[VMAF] Piping ref (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmpbqkozyh2_ref.yuv
+[VMAF] Piping dist (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmp05183uax_dist.yuv
+[VMAF] ffmpeg libvmaf (std) running...
+[VMAF] cmd: ffmpeg -y -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmp05183uax_dist.yuv -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmpbqkozyh2_ref.yuv -lavfi [0:v][1:v]libvmaf=model=version=vmaf_v0.6.1:log_path=/tmp/tmpgsb7s7yx_std.json:log_fmt=json:feature=name=psnr|name=cambi -f null -
+[VMAF] ffmpeg libvmaf (neg) running...
+[VMAF] Result: VMAF=78.37, PSNR-Y=38.39, CAMBI=0.34, NEG=75.75
+    [VMAF] VMAF=78.37 NEG=75.75 CAMBI=0.34 (50s)
+
+  [MODEL] adversarial_distill_v2_600k: inference on /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv
+[NORMALIZE] big_buck_bunny_720p/adversarial_distill_v2_600k_in: /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/big_buck_bunny_720p/av1_360p_crf51.mkv -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+[MODEL] Inference: 240 frames, shape=(240, 1, 360, 640)
+[MODEL] Output: shape (240, 1, 720, 1280), range [0.0000, 1.0000]
+[MODEL]   Output: shape (240, 1, 720, 1280), range [0.000, 1.000]
+    [MODEL] Inference: 240 frames, 1.5s, 156 fps
+    PSNR-Y: 38.24 dB
+    [VMAF] Computing...
+[VMAF] Piping ref (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmpcvb2z4kx_ref.yuv
+[VMAF] Piping dist (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmpdzykxqjz_dist.yuv
+[VMAF] ffmpeg libvmaf (std) running...
+[VMAF] cmd: ffmpeg -y -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmpdzykxqjz_dist.yuv -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmpcvb2z4kx_ref.yuv -lavfi [0:v][1:v]libvmaf=model=version=vmaf_v0.6.1:log_path=/tmp/tmp37jcej_p_std.json:log_fmt=json:feature=name=psnr|name=cambi -f null -
+[VMAF] ffmpeg libvmaf (neg) running...
+[VMAF] Result: VMAF=78.83, PSNR-Y=38.52, CAMBI=0.26, NEG=76.11
+    [VMAF] VMAF=78.83 NEG=76.11 CAMBI=0.26 (50s)
+
+============================================================
+CLIP: /workspace/xiph_clips/elephants_dream_720p.mp4
+============================================================
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/xiph_clips/elephants_dream_720p.mp4
+[PROBE] result: {'width': 1280, 'height': 720, 'fps': 24.00003840006144, 'frames': 240, 'duration': 9.999984}
+  [PROBE] Source: 1280x720, 24.0fps, 240 frames, 10.0s
+  [NORMALIZE] Stage 2: GT 720p from source...
+[NORMALIZE] elephants_dream_720p/gt: /workspace/xiph_clips/elephants_dream_720p.mp4 -> 1280x720
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/elephants_dream_720p.mp4 -vf scale=1280:720:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=663552000
+[NORMALIZE]   ffmpeg resize: -> 1280x720 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 720, 1280), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 720, 1280), no NaN/Inf
+  [NORMALIZE] 240 frames in 3.8s
+  [ENCODE] Stage 3: AV1 CRF 51 encode to 360p...
+[ENCODE] source -> 360p AV1 CRF 51 via SvtAv1EncApp
+[ENCODE] step1 (y4m): ffmpeg -y -hide_banner -loglevel error -i /workspace/xiph_clips/elephants_dream_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt yuv420p -f yuv4mpegpipe /tmp/tmpnxv4fcu0.y4m
+[ENCODE] step2 (svt): /workspace/tools/bin/SvtAv1EncApp -i /tmp/tmpnxv4fcu0.y4m --crf 51 --preset 6 --keyint 240 -b /tmp/tmpt5wpquk4.ivf
+[ENCODE] step3 (mux): ffmpeg -y -hide_banner -loglevel error -i /tmp/tmpt5wpquk4.ivf -c copy /workspace/cache/elephants_dream_720p/av1_360p_crf51.mkv
+[ENCODE] output: /workspace/cache/elephants_dream_720p/av1_360p_crf51.mkv, 478KB
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/cache/elephants_dream_720p/av1_360p_crf51.mkv
+[PROBE] result: {'width': 640, 'height': 360, 'fps': 24.0, 'frames': 240, 'duration': 10.0}
+  [ENCODE] output: /workspace/cache/elephants_dream_720p/av1_360p_crf51.mkv, 478KB, 240 frames (4s)
+[NORMALIZE] elephants_dream_720p/av1: /workspace/cache/elephants_dream_720p/av1_360p_crf51.mkv -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/elephants_dream_720p/av1_360p_crf51.mkv -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+[NORMALIZE] elephants_dream_720p/src360: /workspace/xiph_clips/elephants_dream_720p.mp4 -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/elephants_dream_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+  [GATE FAIL] encode_psnr_check
+    Expected: > 30 dB
+    Got: 29.0 dB
+    Source: /workspace/xiph_clips/elephants_dream_720p.mp4
+    Encoded file: /workspace/cache/elephants_dream_720p/av1_360p_crf51.mkv (478KB)
+    Frame counts: source=240, encoded=240
+
+============================================================
+CLIP: /workspace/xiph_clips/sintel_720p.mp4
+============================================================
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/xiph_clips/sintel_720p.mp4
+[PROBE] result: {'width': 1280, 'height': 720, 'fps': 24.0, 'frames': 240, 'duration': 10.0}
+  [PROBE] Source: 1280x720, 24.0fps, 240 frames, 10.0s
+  [NORMALIZE] Stage 2: GT 720p from source...
+[NORMALIZE] sintel_720p/gt: /workspace/xiph_clips/sintel_720p.mp4 -> 1280x720
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/sintel_720p.mp4 -vf scale=1280:720:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=663552000
+[NORMALIZE]   ffmpeg resize: -> 1280x720 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 720, 1280), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 720, 1280), no NaN/Inf
+  [NORMALIZE] 240 frames in 3.6s
+  [ENCODE] Stage 3: AV1 CRF 51 encode to 360p...
+[ENCODE] source -> 360p AV1 CRF 51 via SvtAv1EncApp
+[ENCODE] step1 (y4m): ffmpeg -y -hide_banner -loglevel error -i /workspace/xiph_clips/sintel_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt yuv420p -f yuv4mpegpipe /tmp/tmp24pg984v.y4m
+[ENCODE] step2 (svt): /workspace/tools/bin/SvtAv1EncApp -i /tmp/tmp24pg984v.y4m --crf 51 --preset 6 --keyint 240 -b /tmp/tmplp_168gd.ivf
+[ENCODE] step3 (mux): ffmpeg -y -hide_banner -loglevel error -i /tmp/tmplp_168gd.ivf -c copy /workspace/cache/sintel_720p/av1_360p_crf51.mkv
+[ENCODE] output: /workspace/cache/sintel_720p/av1_360p_crf51.mkv, 341KB
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/cache/sintel_720p/av1_360p_crf51.mkv
+[PROBE] result: {'width': 640, 'height': 360, 'fps': 24.0, 'frames': 240, 'duration': 10.0}
+  [ENCODE] output: /workspace/cache/sintel_720p/av1_360p_crf51.mkv, 341KB, 240 frames (3s)
+[NORMALIZE] sintel_720p/av1: /workspace/cache/sintel_720p/av1_360p_crf51.mkv -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/sintel_720p/av1_360p_crf51.mkv -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+[NORMALIZE] sintel_720p/src360: /workspace/xiph_clips/sintel_720p.mp4 -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/sintel_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+  [ENCODE] PSNR check: 32.4 dB  (threshold: 30)
+
+  [NORMALIZE] Lanczos: upscale /workspace/cache/sintel_720p/av1_360p_crf51.mkv -> 720p via ffmpeg lanczos
+[NORMALIZE] sintel_720p/lanczos: /workspace/cache/sintel_720p/av1_360p_crf51.mkv -> 1280x720
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/sintel_720p/av1_360p_crf51.mkv -vf scale=1280:720:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=663552000
+[NORMALIZE]   ffmpeg resize: -> 1280x720 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 720, 1280), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 720, 1280), no NaN/Inf
+    PSNR-Y: 30.92 dB (3.5s)
+    [VMAF] Computing...
+[VMAF] Piping ref (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmphp2asil8_ref.yuv
+[VMAF] Piping dist (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmpat5_zf5s_dist.yuv
+[VMAF] ffmpeg libvmaf (std) running...
+[VMAF] cmd: ffmpeg -y -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmpat5_zf5s_dist.yuv -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmphp2asil8_ref.yuv -lavfi [0:v][1:v]libvmaf=model=version=vmaf_v0.6.1:log_path=/tmp/tmp0sntaxo5_std.json:log_fmt=json:feature=name=psnr|name=cambi -f null -
+[VMAF] ffmpeg libvmaf (neg) running...
+[VMAF] Result: VMAF=76.11, PSNR-Y=31.84, CAMBI=0.85, NEG=73.52
+    [VMAF] VMAF=76.11 NEG=73.52 CAMBI=0.85 (50s)
+
+  [MODEL] adversarial_distill_v2_600k: inference on /workspace/cache/sintel_720p/av1_360p_crf51.mkv
+[NORMALIZE] sintel_720p/adversarial_distill_v2_600k_in: /workspace/cache/sintel_720p/av1_360p_crf51.mkv -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/sintel_720p/av1_360p_crf51.mkv -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+[MODEL] Inference: 240 frames, shape=(240, 1, 360, 640)
+[MODEL] Output: shape (240, 1, 720, 1280), range [0.0000, 1.0000]
+[MODEL]   Output: shape (240, 1, 720, 1280), range [0.000, 1.000]
+    [MODEL] Inference: 240 frames, 1.2s, 199 fps
+    PSNR-Y: 30.98 dB
+    [VMAF] Computing...
+[VMAF] Piping ref (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmprs2sw4e9_ref.yuv
+[VMAF] Piping dist (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmp90i3poj1_dist.yuv
+[VMAF] ffmpeg libvmaf (std) running...
+[VMAF] cmd: ffmpeg -y -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmp90i3poj1_dist.yuv -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmprs2sw4e9_ref.yuv -lavfi [0:v][1:v]libvmaf=model=version=vmaf_v0.6.1:log_path=/tmp/tmp_fy7o4lp_std.json:log_fmt=json:feature=name=psnr|name=cambi -f null -
+[VMAF] ffmpeg libvmaf (neg) running...
+[VMAF] Result: VMAF=76.46, PSNR-Y=31.92, CAMBI=0.57, NEG=73.87
+    [VMAF] VMAF=76.46 NEG=73.87 CAMBI=0.57 (54s)
+
+============================================================
+CLIP: /workspace/xiph_clips/tears_of_steel_720p.mp4
+============================================================
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/xiph_clips/tears_of_steel_720p.mp4
+[PROBE] result: {'width': 1280, 'height': 534, 'fps': 24.0, 'frames': 240, 'duration': 10.0}
+  [PROBE] Source: 1280x534, 24.0fps, 240 frames, 10.0s
+  [NORMALIZE] Stage 2: GT 720p from source...
+[NORMALIZE] tears_of_steel_720p/gt: /workspace/xiph_clips/tears_of_steel_720p.mp4 -> 1280x720
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/tears_of_steel_720p.mp4 -vf scale=1280:720:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=663552000
+[NORMALIZE]   ffmpeg resize: -> 1280x720 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 720, 1280), dtype float32, range [0.0000, 0.9973]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 720, 1280), no NaN/Inf
+  [NORMALIZE] 240 frames in 3.5s
+  [ENCODE] Stage 3: AV1 CRF 51 encode to 360p...
+[ENCODE] source -> 360p AV1 CRF 51 via SvtAv1EncApp
+[ENCODE] step1 (y4m): ffmpeg -y -hide_banner -loglevel error -i /workspace/xiph_clips/tears_of_steel_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt yuv420p -f yuv4mpegpipe /tmp/tmphuzex_t_.y4m
+[ENCODE] step2 (svt): /workspace/tools/bin/SvtAv1EncApp -i /tmp/tmphuzex_t_.y4m --crf 51 --preset 6 --keyint 240 -b /tmp/tmppk37qqha.ivf
+[ENCODE] step3 (mux): ffmpeg -y -hide_banner -loglevel error -i /tmp/tmppk37qqha.ivf -c copy /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv
+[ENCODE] output: /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv, 47KB
+[PROBE] cmd: ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=width,height,r_frame_rate,nb_read_frames -show_entries format=duration -of json /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv
+[PROBE] result: {'width': 640, 'height': 360, 'fps': 24.0, 'frames': 240, 'duration': 10.0}
+  [ENCODE] output: /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv, 47KB, 240 frames (2s)
+[NORMALIZE] tears_of_steel_720p/av1: /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+[NORMALIZE] tears_of_steel_720p/src360: /workspace/xiph_clips/tears_of_steel_720p.mp4 -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/xiph_clips/tears_of_steel_720p.mp4 -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 0.9991]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+  [ENCODE] PSNR check: 42.0 dB  (threshold: 30)
+
+  [NORMALIZE] Lanczos: upscale /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv -> 720p via ffmpeg lanczos
+[NORMALIZE] tears_of_steel_720p/lanczos: /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv -> 1280x720
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv -vf scale=1280:720:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=663552000
+[NORMALIZE]   ffmpeg resize: -> 1280x720 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 720, 1280), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 720, 1280), no NaN/Inf
+    PSNR-Y: 40.03 dB (3.7s)
+    [VMAF] Computing...
+[VMAF] Piping ref (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmp16wrfsvf_ref.yuv
+[VMAF] Piping dist (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmpd7xe_pym_dist.yuv
+[VMAF] ffmpeg libvmaf (std) running...
+[VMAF] cmd: ffmpeg -y -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmpd7xe_pym_dist.yuv -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmp16wrfsvf_ref.yuv -lavfi [0:v][1:v]libvmaf=model=version=vmaf_v0.6.1:log_path=/tmp/tmpmb1g9ud7_std.json:log_fmt=json:feature=name=psnr|name=cambi -f null -
+[VMAF] ffmpeg libvmaf (neg) running...
+[VMAF] Result: VMAF=81.65, PSNR-Y=40.73, CAMBI=1.49, NEG=79.19
+    [VMAF] VMAF=81.65 NEG=79.19 CAMBI=1.49 (50s)
+
+  [MODEL] adversarial_distill_v2_600k: inference on /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv
+[NORMALIZE] tears_of_steel_720p/adversarial_distill_v2_600k_in: /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv -> 640x360
+[NORMALIZE]   cmd: ffmpeg -y -i /workspace/cache/tears_of_steel_720p/av1_360p_crf51.mkv -vf scale=640:360:flags=lanczos -pix_fmt rgb24 -f rawvideo pipe:1
+[NORMALIZE]   ffmpeg decode: 240 frames, raw bytes=165888000
+[NORMALIZE]   ffmpeg resize: -> 640x360 via lanczos
+[NORMALIZE]   RGB->Y BT.601: shape (240, 1, 360, 640), dtype float32, range [0.0000, 1.0000]
+[NORMALIZE]   PASS: frames=240, shape=(240, 1, 360, 640), no NaN/Inf
+[MODEL] Inference: 240 frames, shape=(240, 1, 360, 640)
+[MODEL] Output: shape (240, 1, 720, 1280), range [0.0000, 1.0000]
+[MODEL]   Output: shape (240, 1, 720, 1280), range [0.000, 1.000]
+    [MODEL] Inference: 240 frames, 1.2s, 203 fps
+    PSNR-Y: 40.31 dB
+    [VMAF] Computing...
+[VMAF] Piping ref (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmpztivrvlo_ref.yuv
+[VMAF] Piping dist (240 frames 1280x720) -> y_to_yuv_file
+[VMAF]   y_to_yuv_file: 240 frames 1280x720 -> /tmp/tmp4te22x6e_dist.yuv
+[VMAF] ffmpeg libvmaf (std) running...
+[VMAF] cmd: ffmpeg -y -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmp4te22x6e_dist.yuv -f rawvideo -pix_fmt yuv420p -s 1280x720 -r 30.0 -i /tmp/tmpztivrvlo_ref.yuv -lavfi [0:v][1:v]libvmaf=model=version=vmaf_v0.6.1:log_path=/tmp/tmpvifb8lk3_std.json:log_fmt=json:feature=name=psnr|name=cambi -f null -
+[VMAF] ffmpeg libvmaf (neg) running...
+[VMAF] Result: VMAF=81.79, PSNR-Y=41.17, CAMBI=0.93, NEG=79.55
+    [VMAF] VMAF=81.79 NEG=79.55 CAMBI=0.93 (48s)
+
+
+====================================================================================================
+BENCHMARK v2 RESULTS
+====================================================================================================
+
+Model                    big_buck   sintel_7   tears_of   Avg VMAF   vs Lanczos  Avg CAMBI
+------------------------------------------------------------------------------------------
+  lanczos                   78.37      76.11      81.65      78.71     baseline       0.89
+  adversarial_distill_v2_600k      78.83      76.46      81.79      79.03        +0.32       0.59
+
+=== BENCHMARK COMPLETE ===
+Clips processed: 3/4
+Models tested: 1/1
+Total time: 6m 10s
+Cache hits: 0 (AV1 encodes reused)
+Gates passed: 19/20
+[MERGE] Merged with existing results (4 clips)
+Results saved: /workspace/results/benchmark_results.json
+[DASHBOARD] Pushed to: /root/ghoststream/benchmarks/suite/results/run_20260407_133410_benchmark_v2
+[DASHBOARD] Files: summary.json, summary.csv, full_benchmark.json, report.md
