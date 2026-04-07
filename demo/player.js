@@ -49,7 +49,7 @@ class GhostStreamPlayer {
         maxBufferSize: 256 * 1024 * 1024,
       }
     });
-    this.log(`GPU: ${adapter.info?.device || 'WebGPU device ready'}`);
+    try { this.log(`GPU: ${adapter.info?.device || adapter.info?.description || 'WebGPU device ready'}`); } catch { this.log('GPU: WebGPU device ready'); }
 
     // Load weights
     this.log('Loading model weights (200KB)...');
@@ -73,7 +73,7 @@ class GhostStreamPlayer {
     });
     new Float32Array(this.weightBuf.getMappedRange()).set(f32);
     this.weightBuf.unmap();
-    this.log(`Weights loaded: ${manifest.param_count.toLocaleString()} parameters`);
+    this.log(`Weights loaded: ${(manifest.param_count || manifest.total_params || 47980).toLocaleString()} parameters`);
 
     // Compile shaders
     this.log('Compiling shaders...');
