@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Stream — Neural Video Super-Resolution</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: #0a0a0f; color: #e5e7eb; }
+
+  .header { text-align: center; padding: 24px; }
+  .header h1 { font-size: 32px; color: #fff; }
+  .header h1 span { color: #8b5cf6; }
+  .header p { color: #9ca3af; font-size: 14px; margin-top: 4px; }
+
+  .badge { display: inline-block; background: #1e1b4b; color: #a78bfa; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin: 8px 4px; }
+
+  #status { text-align: center; padding: 16px; color: #fbbf24; font-size: 14px; min-height: 40px; }
+
+  .comparison { display: flex; gap: 8px; justify-content: center; padding: 0 16px; flex-wrap: wrap; }
+  .panel { flex: 1; min-width: 320px; max-width: 640px; }
+  .panel-label {
+    text-align: center; padding: 8px; font-size: 14px; font-weight: 600;
+    border-radius: 8px 8px 0 0;
+  }
+  .panel-label.lanczos { background: #1f2937; color: #9ca3af; }
+  .panel-label.gs { background: #2e1065; color: #c4b5fd; }
+  .panel canvas {
+    width: 100%; aspect-ratio: 16/9;
+    background: #111827; border: 1px solid #1f2937;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .controls {
+    display: flex; gap: 12px; justify-content: center; align-items: center;
+    padding: 20px; flex-wrap: wrap;
+  }
+  button {
+    background: #7c3aed; color: #fff; border: none; border-radius: 8px;
+    padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #6d28d9; }
+  button:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+  button.secondary { background: #1f2937; color: #d1d5db; }
+  button.secondary:hover { background: #374151; }
+
+  input[type="file"] { display: none; }
+  label.upload-btn {
+    background: #1f2937; color: #d1d5db; border-radius: 8px;
+    padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  label.upload-btn:hover { background: #374151; }
+
+  .metrics {
+    display: flex; gap: 16px; justify-content: center; padding: 16px;
+    flex-wrap: wrap;
+  }
+  .metric { text-align: center; }
+  .metric-value { font-size: 24px; font-weight: 700; color: #8b5cf6; font-family: 'SF Mono', monospace; }
+  .metric-label { font-size: 11px; color: #6b7280; }
+
+  .info {
+    max-width: 680px; margin: 20px auto; padding: 0 16px;
+    color: #9ca3af; font-size: 13px; line-height: 1.6;
+  }
+  .info a { color: #8b5cf6; text-decoration: none; }
+  .info a:hover { text-decoration: underline; }
+
+  #no-webgpu {
+    text-align: center; padding: 60px 24px; display: none;
+  }
+  #no-webgpu h2 { color: #f87171; margin-bottom: 12px; }
+  #no-webgpu p { color: #9ca3af; max-width: 500px; margin: 0 auto 12px; }
+
+  video { display: none; }
+
+  .footer {
+    text-align: center; padding: 24px; color: #4b5563; font-size: 12px;
+    border-top: 1px solid #1f2937; margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Ghost <span>Stream</span></h1>
+  <p>Neural Video Super-Resolution — Running in Your Browser</p>
+  <div>
+    <span class="badge">48K Parameters</span>
+    <span class="badge">200KB Model</span>
+    <span class="badge">WebGPU</span>
+    <span class="badge">+4.71 VMAF vs Lanczos</span>
+  </div>
+</div>
+
+<div id="status">Initializing...</div>
+
+<div id="no-webgpu">
+  <h2>WebGPU Not Available</h2>
+  <p>This demo requires WebGPU, which is available in:</p>
+  <p><strong>Chrome 113+</strong> | <strong>Edge 113+</strong> | <strong>Safari 18+</strong></p>
+  <p>Update your browser or try Chrome to see Ghost Stream running in real-time.</p>
+  <p><a href="https://github.com/AxiomState/ghoststream-benchmark">View benchmark results instead</a></p>
+</div>
+
+<div id="app" style="display:none">
+  <div class="comparison">
+    <div class="panel">
+      <div class="panel-label lanczos">Lanczos Bicubic (Standard Browser Upscale)</div>
+      <canvas id="canvas-lanczos"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-label gs">Ghost Stream (Neural Super-Resolution)</div>
+      <canvas id="canvas-gs"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="btn-play" disabled>Play Comparison</button>
+    <button id="btn-pause" class="secondary" disabled>Pause</button>
+    <label class="upload-btn" for="file-upload">Upload Your Video</label>
+    <input type="file" id="file-upload" accept="video/*">
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-value" id="fps-display">—</div>
+      <div class="metric-label">FPS</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" id="inference-display">—</div>
+      <div class="metric-label">Inference (ms)</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">48K</div>
+      <div class="metric-label">Parameters</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">200KB</div>
+      <div class="metric-label">Model Size</div>
+    </div>
+  </div>
+
+  <video id="video-source" loop muted playsinline crossorigin="anonymous">
+    <source src="demo_360p.mp4" type="video/mp4">
+  </video>
+</div>
+
+<div class="info">
+  <p>
+    <strong>What you're seeing:</strong> The left canvas shows standard Lanczos bicubic upscaling
+    (what every browser does today). The right canvas shows Ghost Stream's neural super-resolution
+    running on your GPU via WebGPU. Notice sharper edges, recovered textures, and reduced
+    compression artifacts on the right.
+  </p>
+  <p>
+    <strong>How it works:</strong> A 48K-parameter SPAN network processes each video frame's
+    Y (luma) channel, upscaling from 360p to 720p. The model was trained on DIV2K images with
+    realistic AV1 compression artifacts.
+    <a href="https://github.com/AxiomState/ghoststream-benchmark">Benchmark repo</a> |
+    <a href="https://github.com/AxiomState/ghoststream-benchmark/blob/main/paper/ghoststream.pdf">Paper</a>
+  </p>
+</div>
+
+<div class="footer">
+  Ghost Stream by <a href="https://github.com/AxiomState" style="color:#8b5cf6">AxiomState</a>
+  — MIT License
+</div>
+
+<script src="player.js"></script>
+<script>
+(async function() {
+  const statusEl = document.getElementById('status');
+  const appEl = document.getElementById('app');
+  const noWebGPU = document.getElementById('no-webgpu');
+
+  // Check WebGPU support
+  if (!navigator.gpu) {
+    noWebGPU.style.display = 'block';
+    statusEl.textContent = 'WebGPU not supported in this browser.';
+    statusEl.style.color = '#f87171';
+    return;
+  }
+
+  appEl.style.display = 'block';
+
+  const video = document.getElementById('video-source');
+  const canvasGS = document.getElementById('canvas-gs');
+  const canvasLanczos = document.getElementById('canvas-lanczos');
+  const btnPlay = document.getElementById('btn-play');
+  const btnPause = document.getElementById('btn-pause');
+  const fileUpload = document.getElementById('file-upload');
+
+  const player = new GhostStreamPlayer(video, canvasGS, canvasLanczos, statusEl);
+
+  try {
+    await player.init();
+    btnPlay.disabled = false;
+    statusEl.style.color = '#34d399';
+  } catch (e) {
+    statusEl.textContent = `Error: ${e.message}`;
+    statusEl.style.color = '#f87171';
+    console.error(e);
+    return;
+  }
+
+  // Override log to also update metrics
+  const origLog = player.log.bind(player);
+  player.log = function(msg) {
+    origLog(msg);
+    const fpsMatch = msg.match(/(\d+) fps/);
+    const msMatch = msg.match(/inference: ([\d.]+)ms/);
+    if (fpsMatch) document.getElementById('fps-display').textContent = fpsMatch[1];
+    if (msMatch) document.getElementById('inference-display').textContent = msMatch[1];
+  };
+
+  btnPlay.addEventListener('click', () => {
+    player.play();
+    btnPlay.disabled = true;
+    btnPause.disabled = false;
+  });
+
+  btnPause.addEventListener('click', () => {
+    player.pause();
+    btnPlay.disabled = false;
+    btnPause.disabled = true;
+  });
+
+  fileUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    player.pause();
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    video.load();
+    video.onloadeddata = () => {
+      statusEl.textContent = `Loaded: ${file.name} — Click Play`;
+      btnPlay.disabled = false;
+    };
+  });
+})();
+</script>
+
+</body>
+</html>
