@@ -1,0 +1,50 @@
+[
+  {
+    "clip": "20240505_145554",
+    "frames": 600,
+    "lanczos_vmaf": 77.69,
+    "lanczos_neg": 75.11,
+    "lanczos_psnr": 40.01,
+    "model_vmaf": 81.7,
+    "model_neg": 78.88,
+    "model_psnr": 40.68,
+    "delta": 4.02,
+    "neg_gap_diff": 0.24
+  },
+  {
+    "clip": "PXL_20260225_223249572",
+    "frames": 600,
+    "lanczos_vmaf": 76.41,
+    "lanczos_neg": 73.36,
+    "lanczos_psnr": 24.21,
+    "model_vmaf": 81.08,
+    "model_neg": 77.66,
+    "model_psnr": 24.77,
+    "delta": 4.68,
+    "neg_gap_diff": 0.39
+  },
+  {
+    "clip": "VID_20190326_142224",
+    "frames": 600,
+    "lanczos_vmaf": 84.48,
+    "lanczos_neg": 81.28,
+    "lanczos_psnr": 30.62,
+    "model_vmaf": 90.07,
+    "model_neg": 86.62,
+    "model_psnr": 31.3,
+    "delta": 5.58,
+    "neg_gap_diff": 0.25
+  },
+  {
+    "clip": "mandelbrot_zoom",
+    "frames": 300,
+    "lanczos_vmaf": 62.98,
+    "lanczos_neg": 60.76,
+    "lanczos_psnr": 29.49,
+    "model_vmaf": 66.38,
+    "model_neg": 64.09,
+    "model_psnr": 29.63,
+    "delta": 3.41,
+    "neg_gap_diff": 0.08
+  }
+]
