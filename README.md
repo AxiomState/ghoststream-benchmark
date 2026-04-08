@@ -82,9 +82,9 @@ Every number in this repo is reproducible. The benchmark pipeline:
 
 ### Cross-Machine Reproducibility
 
-SVT-AV1 produces non-deterministic output across different CPU architectures (AVX-512 vs AVX2, thread count). Absolute VMAF scores may vary ±1.0 across machines. **The delta (Ghost Stream minus Lanczos) is consistent to ±0.3 because both use the same encoded input.**
+SVT-AV1 produces non-deterministic output across different CPU architectures (AVX-512 vs AVX2, thread count). Absolute VMAF scores may vary ±1.0 across machines. **Cross-machine delta variance measured at ±0.9 VMAF (same model scored +4.71 on one machine, +3.81 on another). Same-machine reproducibility across different training seeds: ±0.07. We ship pre-encoded AV1 bitstreams so third parties can bypass encoder variance entirely.**
 
-The `--verify` flag accounts for this with ±0.5 tolerance.
+The `--verify` flag accounts for this with ±1.0 tolerance (cross-machine delta variance measured at ±0.9).
 
 ### VMAF NEG & Anti-Gaming Analysis
 
