@@ -4,6 +4,8 @@ Video delivery is expensive. A 10-minute 1080p video at 8 Mbps is 600MB. Serve i
 
 What if you could serve one tiny 360p file and have the viewer's browser reconstruct the 720p version — better than Lanczos upscaling, using a 94KB neural network running entirely client-side? That's Ghost Stream.
 
+*Patent Pending — US Provisional Application Filed April 2026*
+
 ## The Model
 
 Ghost Stream uses a [SPAN](https://github.com/hongyuanyu/SPAN) architecture — 47,980 parameters, 94KB as float16 weights (~200KB as a PyTorch checkpoint). It processes only the Y (luma) channel, leaving chroma to standard resize. The entire model fits in a single WebGPU compute shader.

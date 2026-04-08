@@ -1,5 +1,7 @@
 # Ghost Stream: Neural Video Super-Resolution in the Browser
 
+**Patent Pending** | US Provisional Application Filed April 2026
+
 **+3.53 VMAF over Lanczos on real camera footage. +3.81 to +4.71 on standard sequences.**
 47,980 parameters (94 KB float16 weights; ~200 KB packaged as PyTorch checkpoint). Browser deployment via WebGPU.
 
