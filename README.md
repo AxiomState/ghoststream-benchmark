@@ -1,17 +1,33 @@
 # Ghost Stream: Neural Video Super-Resolution in the Browser
 
-**+4.71 VMAF over Lanczos** on standard test sequences.
-48K parameters. 200KB model. Designed for browser deployment via WebGPU.
+**+3.53 VMAF over Lanczos on real camera footage. +4.71 on standard sequences (median +4.03).**
+47,980 parameters. 94KB float16 weights. Designed for browser deployment via WebGPU.
+
+### Standard Test Sequences (Blender Open Movies)
 
 | Sequence | Type | Lanczos VMAF | Ghost Stream VMAF | Delta |
 |----------|------|-------------|-------------------|-------|
 | Big Buck Bunny | Animation | 89.23 | 90.99 | +1.76 |
-| Elephants Dream | CGI/Surreal | 72.31 | 81.33 | +9.02 |
+| Elephants Dream* | CGI/Surreal | 72.31 | 81.33 | +9.02 |
 | Sintel | CGI/Dark | 90.43 | 93.14 | +2.71 |
 | Tears of Steel | Live Action + VFX | 87.05 | 92.40 | +5.35 |
-| **Average** | | **84.76** | **89.47** | **+4.71** |
+| **Mean** | | **84.76** | **89.47** | **+4.71** |
+| **Median** | | | | **+4.03** |
 
-All metrics include [VMAF NEG](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30) to verify no metric gaming.
+*\*Elephants Dream shows an unusually large improvement (+9.02), likely due to its surreal CGI content with large uniform regions that benefit disproportionately from learned upscaling. Excluding this outlier, the remaining 3 clips average +3.27. We report both mean (+4.71) and median (+4.03) for transparency.*
+
+### Real Camera Footage (Pixel Phone)
+
+| Clip | Lanczos VMAF | Ghost Stream VMAF | Delta | NEG Gap Diff |
+|------|-------------|-------------------|-------|-------------|
+| 20210119 | 87.38 | 91.10 | +3.73 | -0.06 |
+| 20210728 | 76.67 | 80.35 | +3.68 | +0.12 |
+| 20220618 | 78.63 | 82.94 | +4.31 | +0.26 |
+| 20230109 | 76.26 | 78.67 | +2.41 | +0.03 |
+| **Average** | **79.73** | **83.27** | **+3.53** | **+0.09** |
+
+All metrics include [VMAF NEG](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30) for metric gaming verification. PSNR also improves (+0.78 dB on camera footage), confirming genuine reconstruction rather than hallucinated detail.
+
 Pipeline: 720p source → Lanczos ↓2x → 360p → SVT-AV1 CRF 35 → decode → model ↑2x → 720p → VMAF vs original.
 
 ## Quick Start
@@ -40,7 +56,7 @@ python benchmark/benchmark.py --input your_video.mp4
 
 ## How It Works
 
-Ghost Stream upscales AV1-compressed 360p video to 720p using a tiny neural network (48K parameters) that outperforms classical Lanczos interpolation on perceptual quality (VMAF).
+Ghost Stream upscales AV1-compressed 360p video to 720p using a tiny neural network (47,980 parameters) that outperforms classical Lanczos interpolation on perceptual quality (VMAF).
 
 **Architecture:** [SPAN](https://github.com/hongyuanyu/SPAN) (Swift Parameter-free Attention Network) with sigmoid attention. 24 channels, 4 residual blocks, PixelShuffle 2x upsampling. Y-channel only — operates on luma, chroma handled by standard resize.
 
@@ -49,7 +65,7 @@ Ghost Stream upscales AV1-compressed 360p video to 720p using a tiny neural netw
 - Knowledge distillation from a generic [SwinIR-light](https://github.com/JingyunLiang/SwinIR) teacher (910K params)
 - Trained on [DIV2K](https://data.vision.ee.ethz.ch/cvl/DIV2K/) with realistic AV1 degradation (not standard bicubic downscale)
 
-**Key insight:** Training data diversity was the single largest improvement. Switching from 4 domain-specific clips to 800 diverse DIV2K images produced a +7 VMAF swing across all metrics.
+**Key insight:** Training data diversity was the single largest improvement. Switching from 4 domain-specific clips to 800 diverse DIV2K images produced a ~4 VMAF point swing across all metrics.
 
 ## Benchmark Methodology
 
@@ -68,26 +84,48 @@ SVT-AV1 produces non-deterministic output across different CPU architectures (AV
 
 The `--verify` flag accounts for this with ±0.5 tolerance.
 
-### VMAF NEG Honesty Check
+### VMAF NEG & Anti-Gaming Analysis
 
 We report [VMAF NEG](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30) alongside standard VMAF for every result. VMAF NEG penalizes enhancement artifacts that inflate standard VMAF scores.
 
-Ghost Stream's NEG gap (VMAF minus VMAF NEG) averages **2.89**, compared to Lanczos's **2.49**. This 0.40 difference indicates the model applies mild perceptual enhancement beyond pure reconstruction. We consider this acceptable but disclose it for full transparency.
+**Real camera footage:** NEG gap difference of **+0.09** vs Lanczos — negligible metric inflation. This is the most representative test for real-world content.
 
-## Detailed Results
+**Standard sequences (CGI):** NEG gap difference of **+0.78** vs Lanczos — mild perceptual enhancement. This is consistent with the adversarial training objective, which explicitly targets perceptual improvement on difficult regions.
 
-See [`results/leaderboard.md`](results/leaderboard.md) for a full comparison of all model configurations tested during development.
+**Anti-hallucination evidence:** PSNR improves by +0.78 dB on real camera footage alongside the VMAF improvement. Hallucinated detail would show VMAF↑ with PSNR↓ (better perceptual scores but worse pixel accuracy). We see both improving together, confirming genuine reconstruction.
+
+For context, our VIF-trained model (discarded early in development) showed a NEG gap of +5.55 — that's deliberate metric gaming. Ghost Stream's +0.09 on real content is not in the same category.
+
+## Additional Benchmarks
+
+### BD-Rate (5 CRF Points)
+
+Model beats Lanczos at every quality level tested:
+
+| CRF | Quality Level | Delta VMAF |
+|-----|--------------|------------|
+| 23 | Near-lossless | +4.01 |
+| 28 | High quality | +3.94 |
+| 35 | Standard | +3.81 |
+| 42 | Low quality | +3.39 |
+| 51 | Very low | +2.83 |
+
+### Temporal Consistency
+
+Despite frame-independent processing, Ghost Stream is as temporally stable as Lanczos. Frame-to-frame variance ratios (GS/Lanczos) range from 0.999x to 1.118x — all within 12% of baseline.
+
+See [`results/`](results/) for full data including [`leaderboard.md`](results/leaderboard.md) and [`bd_rate/`](results/bd_rate/).
 
 ### Ablation Study
 
-| Configuration | Avg VMAF | vs Lanczos | Note |
-|--------------|----------|------------|------|
-| Charbonnier only | ~77.0 | -2.00 | Baseline loss |
-| + Adversarial Lanczos loss | ~77.5 | -0.98 | Only penalize where worse than Lanczos |
-| + Knowledge distillation | ~78.1 | -0.34 | Generic SwinIR teacher |
-| + Diverse training data (DIV2K) | **~89.5** | **+4.71** | 800 images vs 4 clips |
+| Configuration | vs Lanczos | Improvement | Note |
+|--------------|------------|-------------|------|
+| Charbonnier only | -2.00 | Baseline | |
+| + Adversarial Lanczos loss | -0.98 | +1.02 | |
+| + Knowledge distillation | -0.34 | +0.64 | Generic SwinIR teacher |
+| + Diverse data (DIV2K) | +3.53* | +3.87 | 800 images vs 4 clips |
 
-*Ablation measured on private Pixel phone clips (first 3 rows) and standard sequences (final row). Deltas are consistent across test sets.*
+*Camera footage. Standard sequences show +4.71 mean / +4.03 median on a different machine. Cross-machine delta variation is ±0.3.*
 
 ## Model Details
 
@@ -95,36 +133,55 @@ See [`results/leaderboard.md`](results/leaderboard.md) for a full comparison of 
 |----------|-------|
 | Architecture | SPANPlus (24ch, 4 blocks, sigmoid attention) |
 | Parameters | 47,980 |
-| Weight file size | ~200KB |
+| Float16 weights (WebGPU) | 94 KB |
+| Float32 checkpoint (PyTorch) | ~200 KB |
 | Input | Y-channel, any resolution (fully convolutional) |
 | Output | 2x input resolution, Y-channel |
 | Scale factor | 2x |
 | Training data | DIV2K (800 images) with AV1 CRF 35 degradation |
 | Training steps | 600,000 |
-| Training cost | ~$0.50 (RunPod 4070 Ti, 77 minutes) |
+
+### Cost
+
+| Item | Cost |
+|------|------|
+| **Single training run** (600K steps, RTX 4070 Ti, 77 min) | **$0.50** |
+| Single training run (RTX 3090, 90 min) | $0.55 |
+| Diagnostic gate (20K steps) | $0.03 |
+| **Total R&D** (10+ experiments, benchmarking, debugging, idle pods) | **~$200** |
+
+The production cost to train one model is $0.50. The $200 total includes all failed experiments, infrastructure debugging, and $120 in idle pod time before auto-shutdown was implemented.
+
+## Limitations
+
+- **Elephants Dream outlier:** +9.02 VMAF on this clip pulls the standard sequence mean up. Median (+4.03) is more representative.
+- **CGI NEG gap:** +0.78 wider than Lanczos on CGI content (only +0.09 on real camera footage).
+- **8 test clips:** 4 CGI + 4 real camera. Sports, screen content, and UGC not tested.
+- **No model comparison:** Not benchmarked against other lightweight SR models at similar parameter counts.
+- **No subjective evaluation:** No MOS or preference studies conducted.
+- **Frame-independent:** No temporal modeling. Temporal consistency is measured but not optimized.
+- **WebGPU deployment:** Not yet benchmarked on mobile devices.
+- **Training code proprietary:** Only inference and benchmark code are published.
 
 ## What's NOT in This Repo
-
-The following are proprietary and not published:
 
 - Training code and loss function implementations
 - Adversarial Lanczos loss details
 - Knowledge distillation pipeline
 - Training data preprocessing scripts
-- Experiment configuration files
 
-The model weights are published under MIT license. The architecture (SPAN) is public. How we trained the model is our competitive advantage.
+The model weights are published under MIT license. The architecture (SPAN) is public.
 
 ## Browser Deployment
 
 Ghost Stream is designed for client-side super-resolution in web browsers via WebGPU:
 
-- **Model size:** ~200KB (smaller than a typical hero image)
+- **Model size:** 94 KB float16 weights (smaller than a typical favicon)
 - **Runtime:** No server-side inference — runs entirely on the viewer's device
 - **Compatibility:** WebGPU (Chrome 113+, Safari 18+, Edge 113+)
 - **Fallback:** ONNX Runtime Web (WASM) for browsers without WebGPU
 
-A browser demo is planned for [`demo/`](demo/).
+See [`demo/`](demo/) for a working browser demo.
 
 ## Citation
 
