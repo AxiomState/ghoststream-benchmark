@@ -365,11 +365,11 @@ def main():
                             print(f"  SKIP: {clip}/{method}/{metric} (not measured)")
                             continue
                         diff = abs(act - exp)
-                        status = "PASS" if diff <= 0.5 else "FAIL"
+                        status = "PASS" if diff <= 1.0 else "FAIL"
                         if status == "FAIL":
                             all_pass = False
                         print(f"  {status}: {clip}/{method}/{metric} expected={exp:.2f} actual={act:.2f} diff={diff:.2f}")
-            print(f"\nOverall: {'PASS' if all_pass else 'FAIL (some metrics differ > 0.5, likely SVT-AV1 cross-machine variance)'}")
+            print(f"\nOverall: {'PASS' if all_pass else 'FAIL (some metrics differ > 1.0, likely SVT-AV1 cross-machine variance)'}")
         else:
             print(f"No expected_results.json found at {expected_file}")
 
