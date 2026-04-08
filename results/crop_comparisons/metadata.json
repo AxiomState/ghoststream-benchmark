@@ -1,0 +1,66 @@
+[
+  {
+    "clip": "big_buck_bunny",
+    "frame": 120,
+    "crop_x": 899,
+    "crop_y": 233,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/big_buck_bunny_comparison.png"
+  },
+  {
+    "clip": "big_buck_bunny_b",
+    "frame": 200,
+    "crop_x": 358,
+    "crop_y": 534,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/big_buck_bunny_b_comparison.png"
+  },
+  {
+    "clip": "elephants_dream",
+    "frame": 100,
+    "crop_x": 923,
+    "crop_y": 213,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/elephants_dream_comparison.png"
+  },
+  {
+    "clip": "sintel",
+    "frame": 150,
+    "crop_x": 1144,
+    "crop_y": 239,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/sintel_comparison.png"
+  },
+  {
+    "clip": "sintel_b",
+    "frame": 60,
+    "crop_x": 608,
+    "crop_y": 575,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/sintel_b_comparison.png"
+  },
+  {
+    "clip": "tears_of_steel",
+    "frame": 100,
+    "crop_x": 1113,
+    "crop_y": 513,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/tears_of_steel_comparison.png"
+  },
+  {
+    "clip": "pixel_20210119",
+    "frame": 150,
+    "crop_x": 1136,
+    "crop_y": 174,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/pixel_20210119_comparison.png"
+  },
+  {
+    "clip": "pixel_20210728",
+    "frame": 100,
+    "crop_x": 1025,
+    "crop_y": 429,
+    "crop_size": 128,
+    "output": "/workspace/crop_comparisons/pixel_20210728_comparison.png"
+  }
+]
