@@ -6,8 +6,10 @@ All models evaluated on the same pipeline: 720p source → Lanczos ↓2x → 360
 
 | Rank | Model | Params | Avg VMAF | vs Lanczos | Avg VMAF NEG | Training Data |
 |------|-------|--------|----------|------------|-------------|---------------|
-| 1 | **Ghost Stream (DIV2K distill v2)** | 48K | **89.47** | **+4.71** | 86.58 | DIV2K (800 images) |
+| 1 | **Ghost Stream (DIV2K distill v2)** | 48K | **89.47** | **+4.71*** | 86.58 | DIV2K (800 images) |
 | — | Lanczos (bicubic) baseline | 0 | 84.76 | — | 82.27 | N/A |
+
+*\*+4.71 on steep_sapphire_gibbon; +3.81 on gothic_tan_slug (same model, same clips, different SVT-AV1 encode). Median: +4.03. Elephants Dream (+9.02) is an outlier.*
 
 ## Pixel Phone Clips (Private Content)
 

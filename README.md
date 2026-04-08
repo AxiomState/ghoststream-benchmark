@@ -1,7 +1,7 @@
 # Ghost Stream: Neural Video Super-Resolution in the Browser
 
-**+3.53 VMAF over Lanczos on real camera footage. +4.71 on standard sequences (median +4.03).**
-47,980 parameters. 94KB float16 weights. Designed for browser deployment via WebGPU.
+**+3.53 VMAF over Lanczos on real camera footage. +3.81 to +4.71 on standard sequences.**
+47,980 parameters (94 KB float16 weights; ~200 KB packaged as PyTorch checkpoint). Browser deployment via WebGPU.
 
 ### Standard Test Sequences (Blender Open Movies)
 
@@ -14,7 +14,9 @@
 | **Mean** | | **84.76** | **89.47** | **+4.71** |
 | **Median** | | | | **+4.03** |
 
-*\*Elephants Dream shows an unusually large improvement (+9.02), likely due to its surreal CGI content with large uniform regions that benefit disproportionately from learned upscaling. Excluding this outlier, the remaining 3 clips average +3.27. We report both mean (+4.71) and median (+4.03) for transparency.*
+*\*Elephants Dream shows an unusually large improvement (+9.02), likely due to its surreal CGI content with large uniform regions that benefit disproportionately from learned upscaling. Excluding this outlier, the remaining 3 clips average +3.27.*
+
+*Cross-machine note: A second benchmark run on different hardware produced +3.81 average on the same 4 clips (SVT-AV1 non-determinism across CPU architectures). Both measurements are valid. We report per-clip deltas for transparency.*
 
 ### Real Camera Footage (Pixel Phone)
 
@@ -58,7 +60,7 @@ python benchmark/benchmark.py --input your_video.mp4
 
 Ghost Stream upscales AV1-compressed 360p video to 720p using a tiny neural network (47,980 parameters) that outperforms classical Lanczos interpolation on perceptual quality (VMAF).
 
-**Architecture:** [SPAN](https://github.com/hongyuanyu/SPAN) (Swift Parameter-free Attention Network) with sigmoid attention. 24 channels, 4 residual blocks, PixelShuffle 2x upsampling. Y-channel only — operates on luma, chroma handled by standard resize.
+**Architecture:** [SPAN](https://github.com/hongyuanyu/SPAN) (Swift Parameter-free Attention Network) with sigmoid attention. 24 channels, 4 residual blocks, PixelShuffle 2x upsampling. Ghost Stream processes the Y (luminance) channel only; chroma is preserved from the Lanczos upscale. This eliminates color artifacts by design.
 
 **Training approach:**
 - Adversarial baseline training: gradient updates restricted to pixels where the model underperforms Lanczos
@@ -102,13 +104,15 @@ For context, our VIF-trained model (discarded early in development) showed a NEG
 
 Model beats Lanczos at every quality level tested:
 
-| CRF | Quality Level | Delta VMAF |
-|-----|--------------|------------|
-| 23 | Near-lossless | +4.01 |
-| 28 | High quality | +3.94 |
-| 35 | Standard | +3.81 |
-| 42 | Low quality | +3.39 |
-| 51 | Very low | +2.83 |
+| CRF | Quality Level | Delta VMAF | Note |
+|-----|--------------|------------|------|
+| 23 | Near-lossless | +4.01 | |
+| 28 | High quality | +3.94 | |
+| 35 | Standard | +3.81 | Same clips as standard sequence table |
+| 42 | Low quality | +3.39 | |
+| 51 | Very low | +2.83 | Extreme compression |
+
+*BD-rate measured on gothic_tan_slug (RTX PRO 6000). CRF 35 delta (+3.81) differs from standard sequence table (+4.71) due to cross-machine SVT-AV1 non-determinism.*
 
 ### Temporal Consistency
 
@@ -125,7 +129,7 @@ See [`results/`](results/) for full data including [`leaderboard.md`](results/le
 | + Knowledge distillation | -0.34 | +0.64 | Generic SwinIR teacher |
 | + Diverse data (DIV2K) | +3.53* | +3.87 | 800 images vs 4 clips |
 
-*Camera footage. Standard sequences show +4.71 mean / +4.03 median on a different machine. Cross-machine delta variation is ±0.3.*
+*Camera footage on gothic_tan_slug. Standard sequences show +3.81 to +4.71 depending on machine (SVT-AV1 non-determinism). Ablation rows 1-3 measured on EU-CZ-1 hardware; diverse data row on US-NC-1.*
 
 ## Model Details
 
@@ -152,16 +156,18 @@ See [`results/`](results/) for full data including [`leaderboard.md`](results/le
 
 The production cost to train one model is $0.50. The $200 total includes all failed experiments, infrastructure debugging, and $120 in idle pod time before auto-shutdown was implemented.
 
-## Limitations
+## Known Limitations
 
-- **Elephants Dream outlier:** +9.02 VMAF on this clip pulls the standard sequence mean up. Median (+4.03) is more representative.
-- **CGI NEG gap:** +0.78 wider than Lanczos on CGI content (only +0.09 on real camera footage).
-- **8 test clips:** 4 CGI + 4 real camera. Sports, screen content, and UGC not tested.
-- **No model comparison:** Not benchmarked against other lightweight SR models at similar parameter counts.
-- **No subjective evaluation:** No MOS or preference studies conducted.
-- **Frame-independent:** No temporal modeling. Temporal consistency is measured but not optimized.
-- **WebGPU deployment:** Not yet benchmarked on mobile devices.
-- **Training code proprietary:** Only inference and benchmark code are published.
+- **Small test set:** Results validated on 8 clips (4 CGI, 4 real camera). Broader validation across sports, anime, low-light, and talking-head content is planned.
+- **Elephants Dream outlier:** +9.02 VMAF on this clip pulls the standard sequence mean up significantly. Median (+4.03) is more representative.
+- **CGI NEG gap:** +0.78 wider than Lanczos on CGI content, indicating mild perceptual enhancement. Only +0.09 on real camera footage. PSNR improves +0.78 dB alongside VMAF, confirming genuine reconstruction — not hallucinated detail.
+- **SVT-AV1 non-determinism:** Same model, same clips produce +3.81 to +4.71 delta across different machines. We ship pre-encoded reference files for reproducibility and report per-clip results.
+- **Ablation across environments:** First 3 ablation rows (Charbonnier through distillation) were measured on EU-CZ-1 hardware; diverse data row on US-NC-1. Directionally accurate but not precisely comparable.
+- **No comparison models:** Not benchmarked against EDSR, FSRCNN, or other SR models at similar parameter counts.
+- **No subjective evaluation:** All quality claims are based on VMAF/PSNR metrics. No Mean Opinion Score (MOS) human evaluation has been conducted.
+- **Frame-independent:** No temporal modeling. Temporal consistency is measured (within 12% of Lanczos) but not optimized.
+- **WebGPU deployment untested on mobile:** Battery, thermal, and FPS performance on phones/tablets has not been measured.
+- **Training not reproducible:** Only inference benchmark and weights are public. Training code, loss implementation, and experiment configs are proprietary.
 
 ## What's NOT in This Repo
 

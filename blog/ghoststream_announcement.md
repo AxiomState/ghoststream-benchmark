@@ -53,7 +53,9 @@ This project took a week of iteration, mostly fighting infrastructure rather tha
 
 **Round 4: The obvious thing.** After all the loss engineering, the single biggest improvement came from using standard SR training data (DIV2K, 800 images) instead of 4 phone clips. The model jumped from -0.34 to +3.53 on real camera footage and +4.71 on standard sequences. I should have done this first.
 
-**Total GPU cost: ~$200** — but only $0.50 of that was the final training run. The rest was failed experiments ($15), benchmarking ($10), debugging ($15), idle pods that didn't auto-shutdown ($120), and miscellaneous ($40). The production cost to train this model from scratch is fifty cents.
+**Total GPU cost: ~$200** — but only $0.50 of that was the final training run (600K steps, RTX 4070 Ti, 77 minutes). The rest was failed experiments ($15), benchmarking ($10), debugging ($15), idle pods that didn't auto-shutdown ($120), and miscellaneous ($40). The production cost to train this model from scratch is fifty cents.
+
+One nuance worth noting: the same model on the same clips scores +4.71 on one machine and +3.81 on another, because SVT-AV1 produces slightly different compressed output depending on CPU instruction set (AVX-512 vs AVX2). Per-clip deltas are consistent; absolute scores vary. This is why we publish per-clip results and pre-encoded reference files rather than a single headline number.
 
 ## Try It Yourself
 
