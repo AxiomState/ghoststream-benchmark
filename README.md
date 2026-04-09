@@ -204,4 +204,4 @@ See [`demo/`](demo/) for a working browser demo.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). A project by [Olivas Venture Capital LLC](https://harvv.com).
